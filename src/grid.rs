@@ -1,0 +1,53 @@
+use rand::Rng;
+
+pub struct Grid {
+    width: usize,
+    height: usize,
+    pub ternary: Vec<i8>,
+}
+
+impl Grid {
+    pub fn new(width: usize, height: usize, prob_prey: f32, prob_predator: f32) -> Grid {
+        let mut grid = Grid {
+            width,
+            height,
+            ternary: vec![0; width * height],
+        };
+        grid.fill_random_grid(prob_prey, prob_predator);
+        grid
+    }
+
+    // fn add_predator(&mut self, p: Point) {
+    //     self.ternary[p.x + p.y * self.width] = 1;
+    // }
+
+    // fn add_prey(&mut self, p: Point) {
+    //     self.ternary[p.x + p.y * self.width] = -1;
+    // }
+
+    fn fill_random_grid(&mut self, prob_prey: f32, prob_predator: f32) {
+        for i in 0..self.width * self.height {
+            let num = rand::thread_rng().gen::<f32>();
+            if num < prob_prey {
+                self.ternary[i] = -1;
+            } else if num > 1.0 - prob_predator {
+                self.ternary[i] = 1;
+            }
+        }
+    }
+
+    pub fn show(&self) {
+        for (i, val) in self.ternary.iter().enumerate() {
+            if i % self.width == 0 {
+                print!("\n");
+            }
+            match val {
+                0 => print!(". "),
+                1 => print!("X "),
+                -1 => print!("O "),
+                _ => print!("_ "),
+            }
+        }
+        print!("\n");
+    }
+}
