@@ -1,8 +1,8 @@
 use rand::Rng;
 
 pub struct Grid {
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
     pub ternary: Vec<i8>,
 }
 
@@ -16,14 +16,6 @@ impl Grid {
         grid.fill_random_grid(prob_prey, prob_predator);
         grid
     }
-
-    // fn add_predator(&mut self, p: Point) {
-    //     self.ternary[p.x + p.y * self.width] = 1;
-    // }
-
-    // fn add_prey(&mut self, p: Point) {
-    //     self.ternary[p.x + p.y * self.width] = -1;
-    // }
 
     fn fill_random_grid(&mut self, prob_prey: f32, prob_predator: f32) {
         for i in 0..self.width * self.height {
