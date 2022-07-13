@@ -14,10 +14,9 @@ impl NeuralNet {
         let mut layers = vec![];
         let mut n_inputs = 0;
         for n_neurons in architecture {
-            if n_inputs == 0 {
-                continue;
+            if n_inputs != 0 {
+                layers.push(Layer::new(n_inputs, n_neurons));
             }
-            layers.push(Layer::new(n_inputs, n_neurons));
             n_inputs = n_neurons;
         }
         NeuralNet { layers }
@@ -26,6 +25,7 @@ impl NeuralNet {
     fn compute(&self, inputs: &Vec<f32>) -> Vec<f32> {
         let mut outputs = vec![0.0];
         let mut inputs: &Vec<f32> = inputs;
+
         for layer in &self.layers {
             outputs = layer.compute(inputs);
             inputs = &outputs;
@@ -103,18 +103,20 @@ impl Neuron {
 
 pub struct Prey {
     pub position: usize,
+    pub prev_position: usize,
     view_distance: usize,
-    energy: usize,
-    split_count: usize,
+    pub energy: usize,
+    pub split_count: usize,
     neural_net: NeuralNet,
 }
 
 pub struct Predator {
     pub position: usize,
+    pub prev_position: usize,
     direction: Direction,
     view_distance: usize,
-    energy: usize,
-    split_count: usize,
+    pub energy: usize,
+    pub split_count: usize,
     neural_net: NeuralNet,
 }
 
@@ -129,6 +131,7 @@ impl Prey {
     pub fn new(position: usize, view_distance: usize, max_energy: usize) -> Prey {
         Prey {
             position,
+            prev_position: position,
             view_distance,
             energy: max_energy,
             split_count: 0,
@@ -138,14 +141,26 @@ impl Prey {
 
     pub fn take_step(&mut self, grid: &Grid) {
         let mut view = self.look(grid);
+        self.prev_position = self.position;
+        self.split_count += 1;
+
         let max_pos = grid.width * grid.height;
         view.push(self.energy as f32);
         let output = self.neural_net.compute(&view);
+
+        if self.energy == 0 {
+            self.energy += 1;
+            return;
+        }
+
+        self.energy -= 1;
+
         match utils::argmax(&output).0 {
-            0 => self.position = (self.position + 1) % max_pos,
-            1 => self.position += (max_pos - 1) % max_pos,
-            2 => self.position = (self.position + grid.width) % max_pos,
-            _ => self.position += (max_pos - grid.width) % max_pos,
+            0 => self.energy += 2,
+            1 => self.position = (self.position + 1) % max_pos,
+            2 => self.position = (self.position + max_pos - 1) % max_pos,
+            3 => self.position = (self.position + grid.width) % max_pos,
+            _ => self.position = (self.position + max_pos - grid.width) % max_pos,
         }
     }
 
@@ -167,6 +182,7 @@ impl Predator {
     pub fn new(position: usize, view_distance: usize, max_energy: usize) -> Predator {
         Predator {
             position,
+            prev_position: position,
             direction: match rand::thread_rng().gen_range(0..=3) {
                 0 => Direction::Left,
                 1 => Direction::Right,
@@ -182,15 +198,18 @@ impl Predator {
 
     pub fn take_step(&mut self, grid: &Grid) {
         let mut view = self.look(grid);
+        self.prev_position = self.position;
 
         view.push(self.energy as f32);
         let output = self.neural_net.compute(&view);
         let max_pos = grid.width * grid.height;
+
         match utils::argmax(&output).0 {
-            0 => self.position = (self.position + 1) % max_pos,
-            1 => self.position += (max_pos - 1) % max_pos,
-            2 => self.position = (self.position + grid.width) % max_pos,
-            _ => self.position += (max_pos - grid.width) % max_pos,
+            0 => (),
+            1 => self.position = (self.position + 1) % max_pos,
+            2 => self.position = (self.position + max_pos - 1) % max_pos,
+            3 => self.position = (self.position + grid.width) % max_pos,
+            _ => self.position = (self.position + max_pos - grid.width) % max_pos,
         }
     }
 
@@ -206,7 +225,7 @@ impl Predator {
             }
             Direction::Left => {
                 for i in 1..self.view_distance + 1 {
-                    out.push(grid.ternary[(self.position - i) % max_pos] as f32);
+                    out.push(grid.ternary[(self.position + max_pos - i) % max_pos] as f32);
                 }
                 out
             }
