@@ -14,3 +14,7 @@
 ## prey
 
 - add split count to NN
+
+## optimize
+
+- new grid generates random numbers each time.

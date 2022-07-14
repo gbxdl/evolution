@@ -1,4 +1,4 @@
-use evolution::grid::Grid;
+use crate::grid::Grid;
 use fastapprox::faster::tanh;
 use rand::{thread_rng, Rng};
 use rand_distr::StandardNormal;

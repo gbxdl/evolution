@@ -12,7 +12,6 @@ rand_distr = "0.4.3"
 rulinalg = "0.3.0"
 gtk = "0.15.5"
 cairo-rs = "0.15.12"
-cargo-instruments = "0.4.5"
 
 [profile.release]
 debug = true
