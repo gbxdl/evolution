@@ -89,6 +89,7 @@ version = "0.1.0"
 dependencies = [
  "cairo-rs",
  "fastapprox",
+ "glib",
  "gtk",
  "rand",
  "rand_distr",

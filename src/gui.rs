@@ -4,6 +4,7 @@ use evolution::{fresh_start, take_step};
 use cairo;
 use gtk::prelude::*;
 
+use glib::signal::SignalHandlerId;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -17,6 +18,8 @@ pub fn build_ui(application: &gtk::Application) {
 
     let vbox = gtk::Box::new(gtk::Orientation::Vertical, 0);
     let drawing_area = Rc::new(RefCell::new(gtk::DrawingArea::new()));
+    let signal_ids = Rc::new(RefCell::new(vec![]));
+
     let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     // let life_button = gtk::Button::with_label("Create life");
     let start_button = gtk::Button::with_label("Start");
@@ -25,7 +28,11 @@ pub fn build_ui(application: &gtk::Application) {
     window.add(&vbox);
 
     let state = Rc::new(RefCell::new(fresh_start()));
-    update_drawing_area(&state, &drawing_area.borrow_mut());
+    update_drawing_area(
+        &state,
+        &drawing_area.borrow_mut(),
+        &mut signal_ids.borrow_mut(),
+    );
 
     // button_box.pack_start(&life_button, true, true, 0);
     button_box.pack_start(&start_button, true, true, 0);
@@ -35,24 +42,43 @@ pub fn build_ui(application: &gtk::Application) {
 
     let state2 = Rc::clone(&state);
     let drawing_area2 = Rc::clone(&drawing_area);
+    let signal_ids2 = Rc::clone(&signal_ids);
 
     take_step_button.connect_clicked(move |_| {
         take_step(&mut state2.borrow_mut());
-        update_drawing_area(&state2, &drawing_area2.borrow_mut());
-        drawing_area2.borrow().queue_draw_area(0, 0, 600, 600);
+        update_drawing_area(
+            &state2,
+            &drawing_area2.borrow_mut(),
+            &mut signal_ids2.borrow_mut(),
+        );
+        drawing_area2.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
     });
 
     start_button.connect_clicked(move |_| {
         take_step(&mut state.borrow_mut());
-        update_drawing_area(&state, &drawing_area.borrow_mut());
-        drawing_area.borrow().queue_draw_area(0, 0, 600, 600);
+        update_drawing_area(
+            &state,
+            &drawing_area.borrow_mut(),
+            &mut signal_ids.borrow_mut(),
+        );
+        drawing_area.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
     });
 
     vbox.pack_start(&button_box, false, false, 0);
     window.show_all();
 }
 
-fn update_drawing_area(state: &Rc<RefCell<SimulationState>>, drawing_area: &gtk::DrawingArea) {
+fn update_drawing_area(
+    state: &Rc<RefCell<SimulationState>>,
+    drawing_area: &gtk::DrawingArea,
+    signal_ids: &mut Vec<SignalHandlerId>,
+) {
+    // find old signal handlers and disconnect
+    for _ in 0..signal_ids.len() {
+        let id = signal_ids.pop();
+        drawing_area.disconnect(id.unwrap());
+    }
+
     let width = state.borrow().config.grid_width;
     let height = state.borrow().config.grid_height;
 
@@ -62,7 +88,9 @@ fn update_drawing_area(state: &Rc<RefCell<SimulationState>>, drawing_area: &gtk:
             -1 => (0.0, 255.0, 0.0),
             _ => (255.0, 255.0, 255.0),
         };
-        drawing_area.connect_draw(move |_, ctx| draw_square(ctx, pos, color, width, height));
+        let signal_id =
+            drawing_area.connect_draw(move |_, ctx| draw_square(ctx, pos, color, width, height));
+        signal_ids.push(signal_id);
     }
 }
 
