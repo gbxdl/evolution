@@ -13,7 +13,9 @@ impl Grid {
             height,
             ternary: vec![0; width * height],
         };
-        grid.fill_random_grid(prob_prey, prob_predator);
+        if prob_prey > 0.0 || prob_predator > 0.0 {
+            grid.fill_random_grid(prob_prey, prob_predator);
+        }
         grid
     }
 
