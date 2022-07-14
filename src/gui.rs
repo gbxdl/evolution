@@ -38,12 +38,14 @@ pub fn build_ui(application: &gtk::Application) {
 
     take_step_button.connect_clicked(move |_| {
         take_step(&mut state2.borrow_mut());
-        update_drawing_area(&state2, &drawing_area2.borrow_mut())
+        update_drawing_area(&state2, &drawing_area2.borrow_mut());
+        drawing_area2.borrow().queue_draw_area(0, 0, 600, 600);
     });
 
     start_button.connect_clicked(move |_| {
         take_step(&mut state.borrow_mut());
         update_drawing_area(&state, &drawing_area.borrow_mut());
+        drawing_area.borrow().queue_draw_area(0, 0, 600, 600);
     });
 
     vbox.pack_start(&button_box, false, false, 0);

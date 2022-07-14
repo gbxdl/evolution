@@ -22,4 +22,8 @@
 
 - start button
 - take x number of steps
-- stave state
+- save state
+
+## profiling
+
+- https://easyperf.net/blog/2019/02/09/Top-Down-performance-analysis-methodology
