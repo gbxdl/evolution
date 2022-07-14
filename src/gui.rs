@@ -2,7 +2,9 @@ use evolution::SimulationState;
 use evolution::{fresh_start, take_step};
 
 use cairo;
+use glib::timeout_add_local;
 use gtk::prelude::*;
+use std::time::Duration;
 
 use glib::signal::SignalHandlerId;
 use std::cell::RefCell;
@@ -55,13 +57,19 @@ pub fn build_ui(application: &gtk::Application) {
     });
 
     start_button.connect_clicked(move |_| {
-        take_step(&mut state.borrow_mut());
-        update_drawing_area(
-            &state,
-            &drawing_area.borrow_mut(),
-            &mut signal_ids.borrow_mut(),
-        );
-        drawing_area.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+        let state3 = Rc::clone(&state);
+        let drawing_area3 = Rc::clone(&drawing_area);
+        let signal_ids3 = Rc::clone(&signal_ids);
+        timeout_add_local(Duration::from_millis(100), move || {
+            take_step(&mut state3.borrow_mut());
+            update_drawing_area(
+                &state3,
+                &drawing_area3.borrow_mut(),
+                &mut signal_ids3.borrow_mut(),
+            );
+            drawing_area3.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+            Continue(true)
+        });
     });
 
     vbox.pack_start(&button_box, false, false, 0);
