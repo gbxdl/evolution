@@ -18,3 +18,7 @@
 ## optimize
 
 - new grid generates random numbers each time.
+
+## issues
+
+- predators don't die.

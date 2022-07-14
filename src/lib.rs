@@ -1,9 +1,12 @@
 mod agents;
 mod grid;
 
+use agents::NeuralNet;
 use agents::Predator;
 use agents::Prey;
 use grid::Grid;
+
+use std::clone::Clone;
 
 pub fn fresh_start() -> SimulationState {
     let config = SimulationConfig {
@@ -34,12 +37,14 @@ pub fn fresh_start() -> SimulationState {
                 position,
                 config.view_distance_prey,
                 config.max_energy_prey,
+                NeuralNet { layers: vec![] },
             ));
         } else if *value == 1 {
             predator_list.push(Predator::new(
                 position,
                 config.view_distance_predator,
                 config.max_energy_predator,
+                NeuralNet { layers: vec![] },
             ));
         }
     }
@@ -77,11 +82,12 @@ impl SimulationState {
         let mut grid = Grid::new(self.config.grid_width, self.config.grid_height, 0.0, 0.0);
 
         let mut remove_indices_predator = vec![];
-        let mut add_positions_predator = vec![];
+        let mut add_positions_nn_predator = vec![];
 
         for (i, predator) in self.predator_list.iter().enumerate() {
             if predator.split_count == self.config.max_split_count_predator {
-                add_positions_predator.push(predator.prev_position);
+                add_positions_nn_predator
+                    .push((predator.prev_position, Clone::clone(&predator.neural_net)));
             }
             if predator.energy == 0 {
                 remove_indices_predator.push(i);
@@ -95,24 +101,25 @@ impl SimulationState {
         }
 
         // add predator babies @todo same NN.
-        for pos in add_positions_predator {
+        for (pos, nn) in add_positions_nn_predator {
             if grid.ternary[pos] == 0 {
                 self.predator_list.push(Predator::new(
                     pos,
                     self.config.view_distance_predator,
                     self.config.max_energy_predator,
+                    nn,
                 ));
                 grid.ternary[pos] = 1;
             }
         }
 
         let mut remove_indices_prey = vec![];
-        let mut add_positions_prey = vec![];
+        let mut add_positions_nn_prey = vec![];
         let mut predator_pos_that_have_eaten = vec![];
 
         for (i, prey) in self.prey_list.iter().enumerate() {
             if prey.split_count == self.config.max_split_count_prey {
-                add_positions_prey.push(prey.prev_position);
+                add_positions_nn_prey.push((prey.prev_position, Clone::clone(&prey.neural_net)));
             }
             if grid.ternary[prey.position] == 1 {
                 remove_indices_prey.push(i);
@@ -127,12 +134,13 @@ impl SimulationState {
             self.prey_list.remove(*i);
         }
         // add prey babies @todo same NN.
-        for pos in add_positions_prey {
+        for (pos, nn) in add_positions_nn_prey {
             if grid.ternary[pos] == 0 {
                 self.prey_list.push(Prey::new(
                     pos,
                     self.config.view_distance_prey,
                     self.config.max_energy_prey,
+                    nn,
                 ));
                 grid.ternary[pos] = -1;
             }
