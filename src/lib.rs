@@ -118,9 +118,10 @@ impl SimulationState {
         let mut add_positions_nn_prey = vec![];
         let mut predator_pos_that_have_eaten = vec![];
 
-        for (i, prey) in self.prey_list.iter().enumerate() {
+        for (i, prey) in self.prey_list.iter_mut().enumerate() {
             if prey.split_count == self.config.max_split_count_prey {
                 add_positions_nn_prey.push((prey.prev_position, Clone::clone(&prey.neural_net)));
+                prey.split_count = 0;
             }
             if grid.ternary[prey.position] == 1 {
                 remove_indices_prey.push(i);
