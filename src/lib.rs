@@ -12,12 +12,12 @@ pub fn fresh_start() -> SimulationState {
     let config = SimulationConfig {
         prob_prey: 0.1,
         prob_predator: 0.1,
-        grid_width: 16,
-        grid_height: 16,
+        grid_width: 32,
+        grid_height: 32,
         max_energy_prey: 10,
         max_energy_predator: 10,
-        view_distance_prey: 5,
-        view_distance_predator: 5,
+        view_distance_prey: 3,
+        view_distance_predator: 3,
         max_split_count_prey: 10,
         max_split_count_predator: 2,
         energy_gain_predator: 10,
@@ -53,6 +53,7 @@ pub fn fresh_start() -> SimulationState {
         grid,
         prey_list,
         predator_list,
+        running: false,
     }
 }
 
@@ -75,6 +76,7 @@ pub struct SimulationState {
     pub grid: Grid,
     predator_list: Vec<Predator>,
     prey_list: Vec<Prey>,
+    pub running: bool,
 }
 
 impl SimulationState {

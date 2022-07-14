@@ -56,24 +56,34 @@ pub fn build_ui(application: &gtk::Application) {
         drawing_area2.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
     });
 
-    start_button.connect_clicked(move |_| {
+    start_button.connect_clicked(move |button| {
         let state3 = Rc::clone(&state);
         let drawing_area3 = Rc::clone(&drawing_area);
         let signal_ids3 = Rc::clone(&signal_ids);
-        timeout_add_local(Duration::from_millis(100), move || {
-            take_step(&mut state3.borrow_mut());
-            update_drawing_area(
-                &state3,
-                &drawing_area3.borrow_mut(),
-                &mut signal_ids3.borrow_mut(),
-            );
-            drawing_area3.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
-            Continue(true)
-        });
+        if button.label().unwrap().as_str() == "Start" {
+            button.set_label("Stop");
+            timeout_add_local(Duration::from_millis(100), move || {
+                take_step(&mut state3.borrow_mut());
+                update_drawing_area(
+                    &state3,
+                    &drawing_area3.borrow_mut(),
+                    &mut signal_ids3.borrow_mut(),
+                );
+                drawing_area3.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+                Continue(state3.borrow().running)
+            });
+        } else {
+            button.set_label("Start");
+        }
+        negate_running(&mut state.borrow_mut());
     });
 
     vbox.pack_start(&button_box, false, false, 0);
     window.show_all();
+}
+
+fn negate_running(state: &mut SimulationState) {
+    state.running = !state.running;
 }
 
 fn update_drawing_area(

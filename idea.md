@@ -32,3 +32,8 @@ Predators can only look forward, prey in all directions.
 Get a neural net to output the moving direction taking as input:
 - The agents view of the world
 - Its energy
+
+
+# Alternative
+
+maybe we can use a lot of the same structure, but instead of having moving prey, we just let one type of agent find food. Might make it easier to see progress.
