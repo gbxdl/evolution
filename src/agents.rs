@@ -112,6 +112,8 @@ impl Predator {
         let mut view = self.look(grid);
         self.prev_position = self.position;
 
+        self.energy -= 1;
+
         view.push(self.energy as f32);
         let output = self.neural_net.compute(&view);
         let max_pos = grid.width * grid.height;

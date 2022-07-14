@@ -21,4 +21,4 @@
 
 ## issues
 
-- predators don't die.
+- predators don't multiply more than once?
