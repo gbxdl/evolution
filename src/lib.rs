@@ -84,10 +84,11 @@ impl SimulationState {
         let mut remove_indices_predator = vec![];
         let mut add_positions_nn_predator = vec![];
 
-        for (i, predator) in self.predator_list.iter().enumerate() {
+        for (i, predator) in self.predator_list.iter_mut().enumerate() {
             if predator.split_count == self.config.max_split_count_predator {
                 add_positions_nn_predator
                     .push((predator.prev_position, Clone::clone(&predator.neural_net)));
+                predator.split_count = 0;
             }
             if predator.energy == 0 {
                 remove_indices_predator.push(i);
@@ -100,7 +101,7 @@ impl SimulationState {
             self.predator_list.remove(*i);
         }
 
-        // add predator babies @todo same NN.
+        // add predator babies.
         for (pos, nn) in add_positions_nn_predator {
             if grid.ternary[pos] == 0 {
                 self.predator_list.push(Predator::new(
@@ -133,7 +134,7 @@ impl SimulationState {
         for i in remove_indices_prey.iter().rev() {
             self.prey_list.remove(*i);
         }
-        // add prey babies @todo same NN.
+        // add prey babies.
         for (pos, nn) in add_positions_nn_prey {
             if grid.ternary[pos] == 0 {
                 self.prey_list.push(Prey::new(

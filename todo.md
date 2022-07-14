@@ -2,9 +2,7 @@
 
 ## general
 
-- Improve structure
-- Inherit NN from parent.
-- Run without GUI
+- Run without GUI (or call run without gui from GUI)
 - Save state
 
 ## predator
@@ -19,6 +17,9 @@
 
 - new grid generates random numbers each time.
 
-## issues
 
-- predators don't multiply more than once?
+## gui
+
+- start button
+- take x number of steps
+- stave state
