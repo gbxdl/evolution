@@ -3,6 +3,8 @@ mod gui;
 use gtk::prelude::*;
 use gui::build_ui;
 
+use evolution::{fresh_start, take_step};
+
 fn main() {
     let gui = true;
     if gui {
@@ -12,6 +14,10 @@ fn main() {
 
         application.run();
     } else {
-        println! {"to do: gui-less."}
+        // just for profiling/benchmarking
+        let mut state = fresh_start();
+        for _ in 0..1000000 {
+            take_step(&mut state)
+        }
     }
 }
