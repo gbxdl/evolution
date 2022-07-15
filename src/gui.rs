@@ -11,8 +11,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub fn build_ui(application: &gtk::Application) {
+    // create window
     let window = gtk::ApplicationWindow::new(application);
-
     window.set_title("Evolution");
     // window.set_border_width(10);
     window.set_position(gtk::WindowPosition::Center);
@@ -22,9 +22,10 @@ pub fn build_ui(application: &gtk::Application) {
     let drawing_area = Rc::new(RefCell::new(gtk::DrawingArea::new()));
     let signal_ids = Rc::new(RefCell::new(vec![]));
 
+    // create buttons
     let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    // let life_button = gtk::Button::with_label("Create life");
     let start_button = gtk::Button::with_label("Start");
+    let take_x_steps_button = gtk::Button::with_label("Take 1000 steps");
     let take_step_button = gtk::Button::with_label("Step");
 
     window.add(&vbox);
@@ -38,22 +39,43 @@ pub fn build_ui(application: &gtk::Application) {
 
     // button_box.pack_start(&life_button, true, true, 0);
     button_box.pack_start(&start_button, true, true, 0);
+    button_box.pack_start(&take_x_steps_button, true, true, 0);
     button_box.pack_start(&take_step_button, true, true, 0);
 
     vbox.pack_start(&*drawing_area.borrow(), true, true, 0);
 
-    let state2 = Rc::clone(&state);
-    let drawing_area2 = Rc::clone(&drawing_area);
-    let signal_ids2 = Rc::clone(&signal_ids);
+    let state_take_step = Rc::clone(&state);
+    let drawing_area_take_step = Rc::clone(&drawing_area);
+    let signal_ids_take_step = Rc::clone(&signal_ids);
 
     take_step_button.connect_clicked(move |_| {
-        take_step(&mut state2.borrow_mut());
+        take_step(&mut state_take_step.borrow_mut());
         update_drawing_area(
-            &state2,
-            &drawing_area2.borrow_mut(),
-            &mut signal_ids2.borrow_mut(),
+            &state_take_step,
+            &drawing_area_take_step.borrow_mut(),
+            &mut signal_ids_take_step.borrow_mut(),
         );
-        drawing_area2.borrow().queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+        drawing_area_take_step
+            .borrow()
+            .queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+    });
+
+    let state_x_steps = Rc::clone(&state);
+    let drawing_area_x_steps = Rc::clone(&drawing_area);
+    let signal_ids_x_steps = Rc::clone(&signal_ids);
+
+    take_x_steps_button.connect_clicked(move |_| {
+        for _ in 0..1000 {
+            take_step(&mut state_x_steps.borrow_mut());
+        }
+        update_drawing_area(
+            &state_x_steps,
+            &drawing_area_x_steps.borrow_mut(),
+            &mut signal_ids_x_steps.borrow_mut(),
+        );
+        drawing_area_x_steps
+            .borrow()
+            .queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
     });
 
     start_button.connect_clicked(move |button| {
