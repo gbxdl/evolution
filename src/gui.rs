@@ -2,7 +2,7 @@ use evolution::SimulationState;
 use evolution::{fresh_start, take_step};
 
 use cairo;
-use glib::timeout_add_local;
+use glib::{idle_add_local, timeout_add_local};
 use gtk::prelude::*;
 use std::time::Duration;
 
@@ -25,7 +25,7 @@ pub fn build_ui(application: &gtk::Application) {
     // create buttons
     let button_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     let start_button = gtk::Button::with_label("Start");
-    let take_x_steps_button = gtk::Button::with_label("Take 1000 steps");
+    let train_button = gtk::Button::with_label("Train");
     let take_step_button = gtk::Button::with_label("Step");
 
     window.add(&vbox);
@@ -39,7 +39,7 @@ pub fn build_ui(application: &gtk::Application) {
 
     // button_box.pack_start(&life_button, true, true, 0);
     button_box.pack_start(&start_button, true, true, 0);
-    button_box.pack_start(&take_x_steps_button, true, true, 0);
+    button_box.pack_start(&train_button, true, true, 0);
     button_box.pack_start(&take_step_button, true, true, 0);
 
     vbox.pack_start(&*drawing_area.borrow(), true, true, 0);
@@ -60,22 +60,20 @@ pub fn build_ui(application: &gtk::Application) {
             .queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
     });
 
-    let state_x_steps = Rc::clone(&state);
-    let drawing_area_x_steps = Rc::clone(&drawing_area);
-    let signal_ids_x_steps = Rc::clone(&signal_ids);
+    let state_train = Rc::clone(&state);
 
-    take_x_steps_button.connect_clicked(move |_| {
-        for _ in 0..1000 {
-            take_step(&mut state_x_steps.borrow_mut());
+    train_button.connect_clicked(move |button| {
+        let state_train_in_clicked = Rc::clone(&state_train);
+        if button.label().unwrap().as_str() == "Train" {
+            button.set_label("Stop");
+            idle_add_local(move || {
+                take_step(&mut state_train_in_clicked.borrow_mut());
+                Continue(state_train_in_clicked.borrow().running)
+            });
+        } else {
+            button.set_label("Train");
         }
-        update_drawing_area(
-            &state_x_steps,
-            &drawing_area_x_steps.borrow_mut(),
-            &mut signal_ids_x_steps.borrow_mut(),
-        );
-        drawing_area_x_steps
-            .borrow()
-            .queue_draw_area(0, 0, 600, 600); //refresh drawing area linux
+        negate_running(&mut state_train.borrow_mut());
     });
 
     start_button.connect_clicked(move |button| {

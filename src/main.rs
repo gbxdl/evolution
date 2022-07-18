@@ -16,7 +16,7 @@ fn main() {
     } else {
         // just for profiling/benchmarking
         let mut state = fresh_start();
-        for _ in 0..1000000 {
+        for _ in 0..10000 {
             take_step(&mut state)
         }
     }

@@ -88,7 +88,7 @@ impl Predator {
         nn: NeuralNet,
     ) -> Predator {
         let neural_net = match nn.layers[..] {
-            [] => NeuralNet::new(vec![view_distance + 1, 5, 5]),
+            [] => NeuralNet::new(vec![view_distance + 5, 5, 5]),
             _ => nn.similar_child(),
         };
 
@@ -135,13 +135,11 @@ impl Predator {
                 for i in 1..self.view_distance + 1 {
                     out.push(grid.ternary[(self.position + i) % max_pos] as f32);
                 }
-                out
             }
             Direction::Left => {
                 for i in 1..self.view_distance + 1 {
                     out.push(grid.ternary[(self.position + max_pos - i) % max_pos] as f32);
                 }
-                out
             }
             Direction::Up => {
                 for i in 1..self.view_distance + 1 {
@@ -149,15 +147,20 @@ impl Predator {
                         grid.ternary[(self.position + i * (max_pos - grid.width)) % max_pos] as f32,
                     );
                 }
-                out
             }
             Direction::Down => {
                 for i in 1..self.view_distance + 1 {
                     out.push(grid.ternary[(self.position + grid.width * i) % max_pos] as f32)
                 }
-                out
             }
         }
+        // also give them 1 step view on each side.
+        out.push(grid.ternary[(self.position + 1) % max_pos] as f32);
+        out.push(grid.ternary[(self.position + max_pos - 1) % max_pos] as f32);
+        out.push(grid.ternary[(self.position + 1 * grid.width) % max_pos] as f32);
+        out.push(grid.ternary[(self.position + 1 * (max_pos - grid.width)) % max_pos] as f32);
+
+        out
     }
 }
 
